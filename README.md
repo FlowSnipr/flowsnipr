@@ -1,7 +1,5 @@
 Flow Snipr
 
-FlowSnipr
-
 A lightweight “Bloomberg-like” market data & options flow terminal built by a solo developer.
 This repo contains both the frontend (Next.js + Tailwind) and backend (FastAPI + Celery + Redis + Postgres).
 
