@@ -69,12 +69,8 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8000/tasks/status/{task_id}
 
 Next Steps
 
-Add .env config for DB + Redis secrets.
-
-Spin up Postgres and test connection from FastAPI.
-
-Initialize migrations (Alembic).
-
-Bootstrap frontend in /web/ with Next.js + Tailwind.
-
-Connect frontend to backend /health for first API fetch.
+-Add .env config for DB + Redis secrets.
+-Spin up Postgres and test connection from FastAPI.
+-Initialize migrations (Alembic).
+-Bootstrap frontend in /web/ with Next.js + Tailwind.
+-Connect frontend to backend /health for first API fetch.
