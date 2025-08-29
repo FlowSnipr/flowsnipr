@@ -1,0 +1,16 @@
+﻿# Python
+api/.venv/
+__pycache__/
+*.pyc
+
+# Node
+web/node_modules/
+web/.next/
+web/.vercel/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+
+# Env files
+*.env
