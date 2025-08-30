@@ -1,10 +1,14 @@
 from __future__ import annotations
-import os, sys
-from pathlib import Path
+
+import os
+import sys
 from logging.config import fileConfig
-from alembic import context
-from sqlalchemy import engine_from_config, pool
+from pathlib import Path
+
 from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
+
+from alembic import context
 
 # ── Locate project root for this Alembic instance (api\)
 API_DIR = Path(__file__).resolve().parents[1]  # ...\api
@@ -23,9 +27,10 @@ config.set_main_option("sqlalchemy.url", db_url)
 # Ensure Python can import your application modules
 sys.path.insert(0, str(API_DIR))
 
+import models  # ensures Stock and any future models are registered
+
 # Import Base + models so Alembic can see them
 from models import Base  # declarative_base() lives here
-import models  # ensures Stock and any future models are registered
 
 # Interpret Alembic config file for logging
 if config.config_file_name is not None:
