@@ -4,7 +4,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createChart, IChartApi } from 'lightweight-charts'
 
 // AG Grid v34+ requires module registration
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community'
+import {
+  ModuleRegistry,
+  AllCommunityModule,
+  ColDef,
+  ValueFormatterParams,
+  CellClassParams,
+} from 'ag-grid-community'
 ModuleRegistry.registerModules([AllCommunityModule])
 import { AgGridReact } from 'ag-grid-react'
 
@@ -23,7 +29,7 @@ export default function DemoPage() {
       height: 320,
       layout: {
         textColor: 'white',
-        background: { type: 'solid', color: '#0a0a0a' }, // v4 style
+        background: { type: 'solid', color: '#0a0a0a' },
       },
       grid: { vertLines: { color: '#222' }, horzLines: { color: '#222' } },
       rightPriceScale: { borderVisible: false },
@@ -35,14 +41,14 @@ export default function DemoPage() {
 
     const now = Math.floor(Date.now() / 1000)
     const data = Array.from({ length: 60 }, (_, i) => ({
-      time: (now - (60 - i) * 60) as any, // last 60 minutes
+      time: (now - (60 - i) * 60) as number,
       value: 100 + Math.sin(i / 6) * 3 + Math.random() * 1.2,
     }))
     series.setData(data)
 
-    const ro = new ResizeObserver(([e]) =>
+    const ro = new ResizeObserver(([e]) => {
       chart.applyOptions({ width: e.contentRect.width })
-    )
+    })
     ro.observe(chartRef.current)
 
     return () => {
@@ -52,22 +58,30 @@ export default function DemoPage() {
   }, [])
 
   // ---- Grid ----
-  const columnDefs = useMemo(
+  const columnDefs = useMemo<ColDef<Row>[]>(
     () => [
       { field: 'symbol', headerName: 'Symbol', sortable: true, filter: true },
-      { field: 'price', headerName: 'Price', sortable: true, valueFormatter: (p: any) => p.value.toFixed(2) },
+      {
+        field: 'price',
+        headerName: 'Price',
+        sortable: true,
+        valueFormatter: (p: ValueFormatterParams<Row>) =>
+          typeof p.value === 'number' ? p.value.toFixed(2) : '',
+      },
       {
         field: 'changePct',
         headerName: 'Δ%',
         sortable: true,
-        valueFormatter: (p: any) => `${p.value.toFixed(2)}%`,
+        valueFormatter: (p: ValueFormatterParams<Row>) =>
+          typeof p.value === 'number' ? `${p.value.toFixed(2)}%` : '',
         cellClassRules: {
-          'text-green-400': (p: any) => p.value >= 0,
-          'text-red-400': (p: any) => p.value < 0,
+          'text-green-400': (p: CellClassParams<Row>) =>
+            typeof p.value === 'number' && p.value >= 0,
+          'text-red-400': (p: CellClassParams<Row>) => typeof p.value === 'number' && p.value < 0,
         },
       },
     ],
-    []
+    [],
   )
 
   const [rowData] = useState<Row[]>([
@@ -77,7 +91,7 @@ export default function DemoPage() {
   ])
 
   return (
-    <main className="mx-auto max-w-6xl p-6 space-y-6">
+    <main className="mx-auto max-w-6xl space-y-6 p-6">
       <h1 className="text-2xl font-semibold tracking-tight">Demo: Chart + Grid</h1>
 
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-4 shadow">
@@ -87,11 +101,7 @@ export default function DemoPage() {
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-4 shadow">
         {/* Using legacy theme to avoid Theming API conflict for now */}
         <div className="ag-theme-quartz" style={{ height: 320, width: '100%' }}>
-          <AgGridReact
-            rowData={rowData}
-            columnDefs={columnDefs as any}
-            theme="legacy"
-          />
+          <AgGridReact<Row> rowData={rowData} columnDefs={columnDefs} theme="legacy" />
         </div>
       </div>
     </main>

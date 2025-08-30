@@ -1,13 +1,14 @@
-﻿from fastapi import FastAPI
+﻿import os
+
 from celery.result import AsyncResult
 from dotenv import load_dotenv
-import os
-
-from celery_app import celery_app, hello_task
+from fastapi import FastAPI
 
 # SQLAlchemy imports
-from sqlalchemy import create_engine, text, Column, Integer, String
+from sqlalchemy import Column, Integer, String, create_engine, text
 from sqlalchemy.orm import Session, declarative_base
+
+from celery_app import celery_app, hello_task
 
 # Load environment variables from api/.env
 load_dotenv(override=True)
@@ -17,6 +18,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 Base = declarative_base()
 
+
 # --- Example table ---
 class Stock(Base):
     __tablename__ = "stocks"
@@ -24,17 +26,21 @@ class Stock(Base):
     symbol = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=True)
 
+
 # --- FastAPI app ---
 app = FastAPI()
+
 
 @app.on_event("startup")
 def on_startup():
     # Create tables automatically on startup if missing
     Base.metadata.create_all(bind=engine)
 
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
 
 # ---- ENV TEST ----
 @app.get("/env-test")
@@ -47,6 +53,7 @@ def env_test():
         "DATABASE_URL": os.getenv("DATABASE_URL"),
     }
 
+
 # ---- Database connectivity test ----
 @app.get("/ping/db")
 def ping_db():
@@ -56,6 +63,7 @@ def ping_db():
             return {"db_connected": bool(result)}
     except Exception as e:
         return {"db_connected": False, "error": str(e)}
+
 
 # ---- Stocks endpoints ----
 @app.post("/stocks")
@@ -67,17 +75,20 @@ def create_stock(symbol: str, name: str | None = None):
         db.refresh(s)
         return {"id": s.id, "symbol": s.symbol, "name": s.name}
 
+
 @app.get("/stocks")
 def list_stocks():
     with Session(engine) as db:
         rows = db.query(Stock).order_by(Stock.symbol).all()
         return [{"id": r.id, "symbol": r.symbol, "name": r.name} for r in rows]
 
+
 # ---- Celery demo endpoints ----
 @app.post("/tasks/hello")
 def run_hello(name: str = "world"):
     job = hello_task.delay(name)
     return {"task_id": job.id, "status": "queued"}
+
 
 @app.get("/tasks/status/{task_id}")
 def task_status(task_id: str):

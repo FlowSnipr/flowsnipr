@@ -1,0 +1,16 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# --- Frontend: run Prettier + ESLint on staged files ---
+npx lint-staged || exit 1
+
+# --- Backend: run Black + isort and auto-stage changes ---
+# Use the project's Python venv if present
+if [ -f "../api/.venv/Scripts/python.exe" ]; then
+  echo "Formatting backend Python with Black + isort..."
+  ../api/.venv/Scripts/python -m black ../api || exit 1
+  ../api/.venv/Scripts/python -m isort ../api || exit 1
+
+  # Auto-stage any changes made by Black/isort so they land in this commit
+  git add ../api
+fi
