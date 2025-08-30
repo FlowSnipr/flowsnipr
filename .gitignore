@@ -14,3 +14,22 @@ Thumbs.db
 
 # Env files
 *.env
+
+# Node
+web/node_modules/
+web/.next/
+web/.vercel/
+
+# Python
+api/.venv/
+**/__pycache__/
+api/.mypy_cache/
+api/.pytest_cache/
+
+# Env / secrets
+**/.env
+.env
+
+# OS / misc
+.DS_Store
+*.log
