@@ -7,21 +7,35 @@ This file continues from the original README and documents all progress made **a
 
 ---
 
-## Current Progress (Phase 0: Foundations, Continued)
+## Current Progress (Phase 0: Foundations, Completed)
 
-### Backend (FastAPI)
+### Backend (FastAPI + Celery + Redis)
 
 **Database & Migrations**
 
-* Added SQLAlchemy `Stock` model (`models.py`).
-* Integrated Alembic for database migrations:
+* SQLAlchemy `Stock` model (`models.py`) created.
+* Alembic initialized, baseline migration generated and applied successfully.
+* Verified schema exists in Postgres.
 
-  * Baseline migration created.
-  * Migration applied successfully, schema verified against Postgres.
+**API Health & Utility Endpoints**
 
-**API Health Check**
+* `/health` → returns `{ "status": "ok" }`.
+* `/env-test` → confirms environment variables loaded correctly.
+* `/ping/db` → verifies Postgres connectivity with `SELECT 1`.
 
-* Confirmed `/health` endpoint returns `{ "status": "ok" }`.
+**Stocks API**
+
+* `/stocks` (POST) → create stock record.
+* `/stocks` (GET) → list stocks (ordered).
+
+**Celery + Redis Task Pipeline**
+
+* `/tasks/hello` → kicks async task via Celery.
+* `/tasks/status/{task_id}` → polls task result/state.
+* Confirmed working:
+
+  * Task queued and processed by Celery worker.
+  * Returns `"SUCCESS"` with payload `"hello FlowSnipr"`.
 
 ---
 
@@ -29,27 +43,22 @@ This file continues from the original README and documents all progress made **a
 
 **Bootstrap**
 
-* New app scaffolded via:
-
-  ```powershell
-  npx create-next-app@latest web --typescript --eslint --tailwind --app --no-src-dir --use-npm
-  ```
-* Verified local dev server running at:
-  [http://localhost:3000](http://localhost:3000)
+* Next.js 15 app scaffolded (`web/`).
+* Local dev server verified at [http://localhost:3000](http://localhost:3000).
 
 **Demo Page (`/demo`)**
 
-* Added chart + grid demo:
+* Chart + grid proof-of-concept:
 
-  * **Lightweight Charts** integration (live area/line series).
-  * **AG Grid** integration (dummy table data).
-* Fixed AG Grid v34 theming migration (removed old CSS, applied correct theme props).
-* Updated Lightweight Charts code for v5 API changes (`addSeries({ type: "Line" })`).
+  * **Lightweight Charts v5** rendering synthetic line/area data.
+  * **AG Grid v34** rendering dummy rows.
+* Theming migration fixed (dropped legacy CSS, used new `theme` API).
+* Chart API updated to v5 (`addSeries({ type: "Line" })`).
 
 **API Fetch**
 
-* Frontend calls backend `/health` to display API status.
-* Added `web/.env.local`:
+* Frontend fetches backend `/health` and displays API status.
+* Configured `web/.env.local`:
 
   ```env
   NEXT_PUBLIC_API_BASE=http://localhost:8000
@@ -61,62 +70,52 @@ This file continues from the original README and documents all progress made **a
 
 **Frontend (web)**
 
-* Configured **Prettier** with Tailwind plugin:
-
-  * `.prettierrc` + `.prettierignore` added.
-* ESLint configured and verified.
-* Added npm scripts:
+* Configured Prettier + Tailwind plugin (`.prettierrc`, `.prettierignore`).
+* ESLint configured and passing cleanly.
+* Scripts added:
 
   * `npm run format` → Prettier write.
   * `npm run lint` → ESLint check.
 
 **Backend (api)**
 
-* Configured **Black** (formatter) + **isort** (import sorter).
-* Verified formatting works:
-
-  ```powershell
-  .\.venv\Scripts\python -m black .
-  .\.venv\Scripts\python -m isort .
-  ```
+* Configured **Black** + **isort**.
+* Verified formatting with manual + automated runs.
 
 **Pre-commit Hooks (Husky + lint-staged)**
 
-* Set up Husky hooks in `web/.husky/`.
-* Pre-commit now runs:
+* Pre-commit hook added at `web/.husky/pre-commit`.
+* Runs on commit:
 
-  * Prettier + ESLint (web)
-  * Black + isort (api)
-* Ensures no unformatted code can be committed.
+  * Prettier + ESLint (web).
+  * Black + isort (api).
 
 **Root-level Unified Scripts**
-Added `package.json` at repo root with unified commands:
 
-```json
-{
-  "name": "flowsnipr-root",
-  "private": true,
-  "scripts": {
-    "format:web": "npm --prefix web run format && npm --prefix web run lint -- --fix",
-    "format:api": "cd api && .\\.venv\\Scripts\\python -m black . && .\\.venv\\Scripts\\python -m isort .",
-    "format:all": "npm run format:web && npm run format:api",
-    "lint:web": "npm --prefix web run lint",
-    "lint:api": "cd api && .\\.venv\\Scripts\\python -m black --check . && .\\.venv\\Scripts\\python -m isort --check-only .",
-    "lint:all": "npm run lint:web && npm run lint:api"
+* Added `package.json` at repo root with unified commands:
+
+  ```json
+  {
+    "scripts": {
+      "format:web": "npm --prefix web run format && npm --prefix web run lint -- --fix",
+      "format:api": "cd api && .\\.venv\\Scripts\\python -m black . && .\\.venv\\Scripts\\python -m isort .",
+      "format:all": "npm run format:web && npm run format:api",
+      "lint:web": "npm --prefix web run lint",
+      "lint:api": "cd api && .\\.venv\\Scripts\\python -m black --check . && .\\.venv\\Scripts\\python -m isort --check-only .",
+      "lint:all": "npm run lint:web && npm run lint:api"
+    }
   }
-}
-```
+  ```
+* Now you can:
 
-Now you can:
-
-* `npm run format:all` → Auto-format frontend + backend.
-* `npm run lint:all` → Lint both without writing changes.
-* Pre-commit hook runs these automatically.
+  * `npm run format:all` → auto-format frontend + backend.
+  * `npm run lint:all` → lint both without writing changes.
+  * Pre-commit hook enforces these automatically.
 
 **Git Hygiene**
 
-* `.gitignore` updated for `.venv`, `__pycache__`, etc.
-* Git warnings about LF/CRLF noted, but harmless on Windows.
+* `.gitignore` updated (e.g., `.venv`, `__pycache__`).
+* CRLF warnings noted (Windows), but harmless.
 
 ---
 
@@ -125,13 +124,13 @@ Now you can:
 ```
 flowsnipr/
 ├── api/                # FastAPI backend
-│   ├── main.py         # FastAPI app w/ /health + Celery integration
+│   ├── main.py         # FastAPI app (health, stocks, celery tasks)
 │   ├── celery_app.py   # Celery config + hello_task
 │   ├── models.py       # SQLAlchemy Stock model
 │   ├── alembic/        # Database migrations
 │   └── .venv/          # Python virtual environment (ignored in Git)
 ├── web/                # Next.js frontend
-│   ├── app/            # App Router pages
+│   ├── app/            # App Router pages (includes /demo)
 │   ├── .prettierrc     # Prettier config
 │   ├── .prettierignore
 │   └── ...
@@ -142,7 +141,7 @@ flowsnipr/
 
 ---
 
-## How to Run (Recap)
+## How to Run
 
 ### Backend
 
@@ -191,19 +190,32 @@ Check: [http://localhost:3000/demo](http://localhost:3000/demo)
   ```powershell
   npm run lint:all
   ```
-* **Pre-commit hook:**
-  Auto-runs Prettier/ESLint (frontend) + Black/isort (backend).
+* **Pre-commit hook:** auto-runs Prettier/ESLint (frontend) + Black/isort (backend).
 
 ---
 
-## Next Steps
+## Phase 0 ✅ Completed
 
-* Add `.env` config for DB + Redis secrets.
-* Spin up Postgres and confirm connection from FastAPI.
-* Add `/stocks` API endpoint and seed test data.
-* Hook frontend AG Grid table up to real `/stocks` API.
-* Deploy stack (Vercel frontend + backend container).
+We now have:
+
+* Backend (FastAPI) connected to Postgres with migrations, models, and test endpoints.
+* Celery/Redis async task pipeline working end-to-end.
+* Frontend demo page rendering chart + grid and fetching API health.
+* Unified formatting + linting automation across stack.
+* Pre-commit hook enforcing hygiene.
 
 ---
 
-Would you like me to also **merge README.md + README2.md into one continuous doc** once Phase 0 is fully wrapped, so you’ll have a single authoritative README before you move into Phase 1?
+## Next Steps (Phase 1)
+
+* Add `.env` configs for DB + Redis (shared across frontend/backend).
+* Seed Postgres with example stocks (MSFT, AAPL, TSLA).
+* Add `/stocks/{symbol}` endpoint for single-stock fetch.
+* Add dummy `/options` endpoint (hardcoded options chain JSON).
+* Hook frontend AG Grid table to real `/stocks` API.
+* Replace chart with API-driven timeseries.
+* Dockerize backend (uvicorn, celery, redis) with dev override.
+* Deploy stack (Vercel frontend + Render/Fly backend).
+
+---
+
