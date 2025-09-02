@@ -1,0 +1,12 @@
+{
+  "name": "flowsnipr-root",
+  "private": true,
+  "scripts": {
+    "format:web": "npm --prefix web run format && npm --prefix web run lint -- --fix",
+    "format:api": "cd api && .\\.venv\\Scripts\\python -m black . && .\\.venv\\Scripts\\python -m isort .",
+    "format:all": "npm run format:web && npm run format:api",
+    "lint:web": "npm --prefix web run lint",
+    "lint:api": "cd api && .\\.venv\\Scripts\\python -m black --check . && .\\.venv\\Scripts\\python -m isort --check-only .",
+    "lint:all": "npm run lint:web && npm run lint:api"
+  }
+}
