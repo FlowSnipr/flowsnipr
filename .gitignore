@@ -102,3 +102,15 @@ Model/
 # macOS
 .AppleDouble
 .LSOverride
+
+# Ensure these are in the *root* .gitignore (not just /web)
+@"
+# Node/Next
+web/node_modules/
+web/.next/
+
+# Large model artifacts
+Model/
+*.pkl
+*.joblib
+"@ | Add-Content .gitignore
