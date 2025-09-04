@@ -1,35 +1,104 @@
-﻿# Python
-api/.venv/
+﻿# -------------------------
+# Node / Next.js
+# -------------------------
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files
+.env*
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+
+# -------------------------
+# Python / FastAPI / Celery
+# -------------------------
+# virtualenvs
+.venv/
+venv/
+ENV/
+env/
+
+# bytecode
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 
-# Node
-web/node_modules/
-web/.next/
-web/.vercel/
+# tooling caches
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+.pyre/
 
-# OS/editor
-.DS_Store
-Thumbs.db
+# packaging / build output
+build/
+dist/
+*.egg-info/
+.eggs/
 
-# Env files
-*.env
+# local DBs / caches
+*.sqlite
+*.db
 
-# Node
-web/node_modules/
-web/.next/
-web/.vercel/
+# celery beat schedule files
+celerybeat-schedule*
+api/celerybeat-schedule*
+celerybeat-schedule-shm
+celerybeat-schedule-wal
 
-# Python
-api/.venv/
-**/__pycache__/
-api/.mypy_cache/
-api/.pytest_cache/
+# local settings / secrets
+api/.env
+web/.env.local
+web/.env.development
+web/.env.production
 
-# Env / secrets
-**/.env
-.env
 
-# OS / misc
-.DS_Store
-*.log
+# -------------------------
+# Models / Large Artifacts
+# -------------------------
+Model/
+*.pkl
+*.joblib
+
+
+# -------------------------
+# Editors / OS
+# -------------------------
+# VS Code
+.vscode/
+# JetBrains
+.idea/
+# Windows
+[Tt]humbs.db
+# macOS
+.AppleDouble
+.LSOverride
